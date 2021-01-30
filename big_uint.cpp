@@ -22,11 +22,46 @@ big_uint::big_uint(const char *n, const int &base) : base(base) {
         } else {
             c = std::tolower(c);
             assert(c >= 'a' && c <= 'f');
-            x.push_front(c - 'a' + 10);
+            c = c - 'a' + 10;
+            assert(c < base);
+            x.push_front(c);
         }
     }
     while (!x.empty() && x.back() == 0)
         x.pop_back();
+}
+
+big_uint &big_uint::operator++() {
+    auto cy = true;
+    for (auto &n : x) {
+        n += cy;
+        cy = n >= base;
+        if (cy)
+            n -= base;
+        else
+            break;
+    }
+    if (cy)
+        x.push_back(1);
+    return *this;
+}
+
+big_uint &big_uint::operator--() {
+    assert(*this);
+
+    auto cy = true;
+    for (auto &lhs : x) {
+        lhs -= cy;
+        cy = lhs < 0;
+        if (cy)
+            lhs += base;
+        else
+            break;
+    }
+
+    while (!x.empty() && x.back() == 0)
+        x.pop_back();
+    return *this;
 }
 
 big_uint &big_uint::operator+=(const big_uint &rhs) {
@@ -73,15 +108,15 @@ big_uint &big_uint::operator-=(const big_uint &rhs) {
         return *this;
     auto cy = false;
     auto rit = rhs.x.cbegin();
-    for (auto &lhs : x) {
+    for (auto &n : x) {
         if (rit != rhs.x.cend()) {
-            lhs -= *rit;
+            n -= *rit;
             ++rit;
         } else if (!cy)
             break;
-        lhs -= cy;
-        cy = lhs < 0;
-        lhs = (lhs + base) % base;
+        n -= cy;
+        cy = n < 0;
+        n = (n + base) % base;
     }
     assert(rit == rhs.x.cend());
     assert(!cy);
@@ -232,23 +267,15 @@ big_uint big_uint::pow(const big_uint &rhs) const {
 
 bool big_uint::operator>(const big_uint &rhs) const { return compare(rhs) > 0; }
 
-bool big_uint::operator>=(const big_uint &rhs) const {
-    return compare(rhs) >= 0;
-}
+bool big_uint::operator>=(const big_uint &rhs) const { return compare(rhs) >= 0; }
 
 bool big_uint::operator<(const big_uint &rhs) const { return compare(rhs) < 0; }
 
-bool big_uint::operator<=(const big_uint &rhs) const {
-    return compare(rhs) <= 0;
-}
+bool big_uint::operator<=(const big_uint &rhs) const { return compare(rhs) <= 0; }
 
-bool big_uint::operator==(const big_uint &rhs) const {
-    return compare(rhs) == 0;
-}
+bool big_uint::operator==(const big_uint &rhs) const { return compare(rhs) == 0; }
 
-bool big_uint::operator!=(const big_uint &rhs) const {
-    return compare(rhs) != 0;
-}
+bool big_uint::operator!=(const big_uint &rhs) const { return compare(rhs) != 0; }
 
 big_uint::operator bool() const { return !x.empty(); }
 
@@ -271,8 +298,7 @@ int big_uint::compare(const big_uint &rhs) const {
     if (size() != rhs.size())
         return size() - rhs.size();
 
-    for (auto lit = x.crbegin(), rit = rhs.x.crbegin(); lit != x.crend();
-         ++lit, ++rit)
+    for (auto lit = x.crbegin(), rit = rhs.x.crbegin(); lit != x.crend(); ++lit, ++rit)
         if (*lit != *rit)
             return *lit - *rit;
     return 0;
