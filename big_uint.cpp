@@ -2,7 +2,7 @@
 
 const char *big_uint::ntable = "0123456789abcdef";
 
-big_uint::big_uint(int n, const int &base) : base(base) {
+big_uint::big_uint(int n, int base) : base(base) {
     assert(base > 1);
     assert(n >= 0);
 
@@ -10,7 +10,7 @@ big_uint::big_uint(int n, const int &base) : base(base) {
         x.push_back(n % base);
 }
 
-big_uint::big_uint(const char *n, const int &base) : base(base) {
+big_uint::big_uint(const char *n, int base) : base(base) {
     assert(base > 1 && base <= 16);
 
     for (; *n; ++n) {
@@ -138,7 +138,7 @@ big_uint &big_uint::operator*=(const big_uint &rhs) {
 
     const auto smaller = *this < rhs;
     big_uint tmp(0, base);
-    auto pos = 0;
+    std::size_t pos = 0;
     for (const auto &n : (smaller ? x : rhs.x)) {
         if (n > 0) {
             big_uint temp(smaller ? rhs : *this);
@@ -151,7 +151,7 @@ big_uint &big_uint::operator*=(const big_uint &rhs) {
             if (cy != 0)
                 temp.x.push_back(cy);
 
-            for (auto i = pos; i; --i)
+            for (std::size_t i = 0; i < pos; ++i)
                 temp.x.push_front(0);
             tmp += temp;
         }
@@ -279,7 +279,7 @@ bool big_uint::operator!=(const big_uint &rhs) const { return compare(rhs) != 0;
 
 big_uint::operator bool() const { return !x.empty(); }
 
-int big_uint::size() const { return x.size(); }
+std::size_t big_uint::size() const { return x.size(); }
 
 std::ostream &operator<<(std::ostream &out, const big_uint &src) {
     assert(src.base <= 16);
@@ -296,10 +296,10 @@ int big_uint::compare(const big_uint &rhs) const {
     assert(base == rhs.base);
 
     if (size() != rhs.size())
-        return size() - rhs.size();
+        return size() > rhs.size() ? 1 : -1;
 
     for (auto lit = x.crbegin(), rit = rhs.x.crbegin(); lit != x.crend(); ++lit, ++rit)
         if (*lit != *rit)
-            return *lit - *rit;
+            return *lit > *rit ? 1 : -1;
     return 0;
 }

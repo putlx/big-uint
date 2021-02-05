@@ -6,8 +6,8 @@
 
 class big_uint {
   public:
-    big_uint(int n, const int &base);
-    big_uint(const char *n, const int &base);
+    big_uint(int n, int base);
+    big_uint(const char *n, int base);
     big_uint(const big_uint &) = default;
     big_uint(big_uint &&) noexcept = default;
     big_uint &operator=(const big_uint &) = default;
@@ -35,7 +35,7 @@ class big_uint {
     bool operator==(const big_uint &rhs) const;
     bool operator!=(const big_uint &rhs) const;
     operator bool() const;
-    int size() const;
+    std::size_t size() const;
 
     friend std::ostream &operator<<(std::ostream &out, const big_uint &src);
 
