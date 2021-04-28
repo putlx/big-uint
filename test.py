@@ -1,16 +1,20 @@
-from random import *
 from operator import *
-
-
-def wrap(n):
-    if n < 65536 and random() < 0.5:
-        return n
-    return f'"{n}"'
-
+from random import *
 
 sns = tuple(int(random() * 10 ** randint(0, 3)) for _ in range(64))
 ns = tuple(int(random() * 10 ** randint(0, 32)) for _ in range(256)) + sns
 b = 10
+assert b in (2, 8, 10, 16)
+
+
+def wrap(n):
+    if b == 10:
+        if n < 65536 and random() < 0.7:
+            return n
+        return f'"{n}"'
+    to_s = {2: bin, 8: oct, 16: hex}
+    return f'"{to_s[b](n)[2:]}"'
+
 
 with open("test.cpp", "w") as out:
     out.write('#include "big_uint.hpp"\n')
